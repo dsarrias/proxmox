@@ -16,19 +16,26 @@
         path: /etc/fstab
         block: |
           {% for drive in DRIVES %}
-          UUID={{ drive.UUID }} {{ drive.MOUNT }} {{ drive.FS }} defaults 0 0
+          UUID={{ drive.UUID }} {{ drive.MOUNT }} {{ drive.FS }} defaults,nofail,x-systemd.device-timeout=30 0 0
           {% endfor %}
           {% for share in SHARES %}
-          {{ share.ADDRESS }}:{{ share.PATH }} {{ share.MOUNT }} {{ share.FS }} defaults 0 0
+          {{ share.ADDRESS }}:{{ share.PATH }} {{ share.MOUNT }} {{ share.FS }} defaults,nofail,_netdev,x-systemd.automount,x-systemd.mount-timeout=30 0 0
           {% endfor %}
         state: present
         create: yes
         insertafter: EOF
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - STORAGE"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      register: fstab_result
       when: (DRIVES is defined and DRIVES | length > 0) or (SHARES is defined and SHARES | length > 0)
+
+    - name: Reload systemd to pick up fstab changes
+      systemd:
+        daemon_reload: yes
+      when: fstab_result is changed
 
     - name: Mount disks
       command: mount -a
+      when: fstab_result is changed
   tags: mount-disk
 
 - name: Create Media directory structure
