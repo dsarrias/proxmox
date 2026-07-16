@@ -1,0 +1,15 @@
+- name: Fix mounts and Plex on boot
+  block:
+    - name: Copy plex-boot-fix systemd service
+      copy:
+        src: plex-boot-fix.service
+        dest: /etc/systemd/system/plex-boot-fix.service
+        mode: 0644
+      register: boot_fix_service
+
+    - name: Enable plex-boot-fix service
+      systemd:
+        name: plex-boot-fix.service
+        enabled: yes
+        daemon_reload: "{{ boot_fix_service is changed }}"
+  tags: boot-fix

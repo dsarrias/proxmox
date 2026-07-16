@@ -1,6 +1,4 @@
 ---
-# Common
-
 # Proxmox server
 
 # Ubuntu server
@@ -11,4 +9,6 @@
 - import_tasks: disks.yml
   when: inventory_hostname == 'ubuntu'
 - import_tasks: docker.yml
+  when: inventory_hostname == 'ubuntu'
+- import_tasks: boot_fix.yml
   when: inventory_hostname == 'ubuntu'

@@ -1,0 +1,14 @@
+[Unit]
+Description=Remount all filesystems and restart Plex after boot
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/mount -a
+ExecStart=/usr/bin/docker restart plex
+
+[Install]
+WantedBy=multi-user.target
