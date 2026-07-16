@@ -1,5 +1,5 @@
 # Overview
-This repository is a continuation of [rpi-home-lab ](https://github.com/Misterdeiff/rpi-home-lab), my original setup running on a `Raspberry Pi OS Lite 64-bit`. I decided to migrate everthing to a [Beelink SEi12](https://www.bee-link.com/products/beelink-sei12-i5-12450h) MiniPC because the Raspberry gave me buffering problems while watching 4K movies on Plex. In addition, the Intel Graphic card helps with transcoding, which wasn't possible with the Raspberry.
+This repository is a continuation of [rpi-home-lab ](https://github.com/Misterdeiff/rpi-home-lab), my original setup running on a `Raspberry Pi OS Lite 64-bit`. I decided to migrate everthing to a Beelink SEi12 MiniPC because the Raspberry gave me buffering problems while watching 4K movies on Plex. In addition, the Intel Graphic card helps with transcoding, which wasn't possible with the Raspberry.
 
 This repository contains a variety of docker containers, with the majority of them oriented to have your own media solution using ARR servers, but also adding cool containers such as Pi-hole for DNS, Tailscale for remote private access, or Watchtower for automatic Docker updates. 
 
