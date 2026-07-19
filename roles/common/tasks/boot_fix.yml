@@ -1,5 +1,11 @@
 - name: Fix mounts and Plex on boot
   block:
+    - name: Copy plex-boot-fix script
+      copy:
+        src: plex-boot-fix.sh
+        dest: /usr/local/bin/plex-boot-fix.sh
+        mode: 0755
+
     - name: Copy plex-boot-fix systemd service
       copy:
         src: plex-boot-fix.service

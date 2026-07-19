@@ -7,8 +7,8 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/mount -a
-ExecStart=/usr/bin/docker restart plex
+TimeoutStartSec=30min
+ExecStart=/usr/local/bin/plex-boot-fix.sh
 
 [Install]
 WantedBy=multi-user.target
