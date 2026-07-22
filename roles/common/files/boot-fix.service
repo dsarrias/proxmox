@@ -1,5 +1,5 @@
 [Unit]
-Description=Remount all filesystems and restart Plex after boot
+Description=Remount all filesystems and bring up all docker compose services after boot
 Wants=network-online.target
 After=network-online.target docker.service
 Requires=docker.service
@@ -8,7 +8,7 @@ Requires=docker.service
 Type=oneshot
 RemainAfterExit=yes
 TimeoutStartSec=30min
-ExecStart=/usr/local/bin/plex-boot-fix.sh
+ExecStart=/usr/local/bin/boot-fix.sh
 
 [Install]
 WantedBy=multi-user.target
