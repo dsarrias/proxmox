@@ -26,6 +26,24 @@ services:
       <<: *default-healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:32400/web/index.html"]
 
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    hostname: jellyfin
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PUID={{ PUID }}
+      - PGID={{ PGID }}
+      - TZ={{ TIMEZONE }}
+      - UMASK=022
+    volumes:
+      - "{{ DOCKER_CONFIG }}/jellyfin:/config"
+      - "{{ NEW_STORAGE }}/media:/data/media"
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
+
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
