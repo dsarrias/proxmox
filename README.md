@@ -11,6 +11,7 @@ I included some interesting container notes to take into account when configurin
 Here a summary of what's in this repository
 
 - [Plex](https://hub.docker.com/r/linuxserver/plex): Media organizer and player
+- [Jellyfin](https://docs.linuxserver.io/images/docker-jellyfin/): Free media organizer and player
 - [Tautilli](https://docs.linuxserver.io/images/docker-tautulli/): Plex monitoring & analytics
 - [qBittorrent](https://docs.linuxserver.io/images/docker-qbittorrent/): Torrent manager
 - [Overseerr](https://docs.linuxserver.io/images/docker-overseerr/): Media request manager and discovery
@@ -114,6 +115,11 @@ Note: `telegram_notification_disk.sh` uses an optional variable `EXCLUDE_DISK` t
 
 ## Plex
 1. Go to http://YOUR_IP:32400/web/index.html
+2. Configure your folders
+3. Add server in your end device
+
+## Jellyfin
+1. Go to http://YOUR_IP:8096
 2. Configure your folders
 3. Add server in your end device
 
