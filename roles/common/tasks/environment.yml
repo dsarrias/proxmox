@@ -28,7 +28,7 @@
     dest: "{{ USER_PATH }}/scripts/cron/telegram_notification_disk.sh"
     owner: root
     group: root
-    mode: '0755'
+    mode: '0700' # Contains the Telegram token
   tags: environment, cron
 
 - name: Create cron job for telegram_notification_disk.sh
@@ -45,7 +45,7 @@
     dest: "{{ USER_PATH }}/scripts/telegram_notification_argument.sh"
     owner: root
     group: root
-    mode: '0755'
+    mode: '0700' # Contains the Telegram token
   tags: environment, telegram
 
 - name: Reconfigure default DNS configuration #Otherwise Pi-hole won't start

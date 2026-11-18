@@ -41,44 +41,40 @@
 - name: Install Docker
   become: true
   block:
-    - name: Create directory for Docker GPG key
+    # Replaced by docker.sources below, apt fails on conflicting Signed-By
+    - name: Remove legacy Docker apt list
       file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
-        
-    - name: Download Docker's GPG key
-      get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        dest: /etc/apt/keyrings/docker.asc
-        mode: '0644'
+        path: /etc/apt/sources.list.d/docker.list
+        state: absent
 
     - name: Add Docker's apt repository
-      ansible.builtin.shell: |
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
-      args:
-        executable: /bin/bash
+      deb822_repository:
+        name: docker
+        types: deb
+        uris: https://download.docker.com/linux/ubuntu
+        suites: "{{ ansible_distribution_release }}"
+        components: stable
+        architectures: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+        signed_by: https://download.docker.com/linux/ubuntu/gpg
 
-    - name: Update apt package index again (with Docker repo)
+    - name: Install Docker and related packages
       apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: latest
         update_cache: yes
-        
+
     - name: Add my user to Docker
-      command: "sudo usermod -a -G docker {{ USER }}"
+      user:
+        name: "{{ USER }}"
+        groups: docker
+        append: yes
 
   tags: docker
-
-- name: Install Docker and related packages
-  apt:
-    name: "{{ item }}"
-    state: latest
-  loop:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
-    - docker-buildx-plugin
-    - docker-compose-plugin
-  tags: dockertest
 
 # ZSH
 - name: Install Oh My Zsh and setup

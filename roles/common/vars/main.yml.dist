@@ -7,15 +7,24 @@ DRIVES:
   - UUID: UUID_DISK2
     MOUNT: /mnt/backup
     FS: exfat
- - UUID: UUID_DISK3
+  - UUID: UUID_DISK3
     MOUNT: /mnt/timemachine
     FS: ntfs
+
+# NFS shares (e.g. TrueNAS), use [] if none
+SHARES:
+  - ADDRESS: 192.168.0.10
+    PATH: /mnt/pool/media
+    MOUNT: /mnt/media
+    FS: nfs
 
 # General
 ansible_ssh_private_key_file: ~/.ssh/authorized_keys/
 STORAGE: "{{ DRIVES[0]['MOUNT'] }}"
 BACKUP: "{{ DRIVES[1]['MOUNT'] }}"
 TIMEMACHINE: "{{ DRIVES[2]['MOUNT'] }}"
+NEW_STORAGE: "{{ SHARES[0]['MOUNT'] }}" # ARR media root, use STORAGE if no shares
+DOCKER_CONFIG: /opt/docker
 DISK_ALERT_LIMIT: 80
 EXCLUDE_DISK: /dev/sda2 # timemachine
 USER: USER

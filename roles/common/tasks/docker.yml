@@ -9,25 +9,32 @@
   template:
     src: compose.yml
     dest: "{{ USER_PATH }}/compose.yml"
+    owner: "{{ USER }}"
+    group: "{{ USER }}"
+    mode: '0600'
   tags: docker, compose, compose-restart, container
 
+# Only runs when the compose-restart tag is requested explicitly
 - name: Stop Docker
-  command: sudo docker compose down --remove-orphans
-  tags: docker, compose-restart
+  command: docker compose down --remove-orphans
+  args:
+    chdir: "{{ USER_PATH }}"
+  tags: never, compose-restart
 
+# Only (re)creates containers whose config or image changed
 - name: Start Docker
-  command: sudo COMPOSE_HTTP_TIMEOUT=200 docker compose up -d
+  command: docker compose up -d --remove-orphans
+  args:
+    chdir: "{{ USER_PATH }}"
+  environment:
+    COMPOSE_HTTP_TIMEOUT: "200"
+  register: compose_up
+  changed_when: compose_up.stderr is search('Creat|Recreat|Start|Remov')
   tags: docker, compose-restart, compose-start
 
 - name: Restart Docker Container
-  block:
-    - name: Stop container
-      shell: docker compose stop {{ container }}
-      
-    - name: Remove container
-      shell: docker rm {{ container }}
-
-    - name: Start container
-      shell: docker compose up -d {{ container }}
+  command: docker compose up -d --force-recreate {{ container | quote }}
+  args:
+    chdir: "{{ USER_PATH }}"
   when: container is defined
   tags: container
