@@ -11,7 +11,7 @@ DRIVES:
     MOUNT: /mnt/timemachine
     FS: ntfs
 
-# NFS shares (e.g. TrueNAS), use [] if none
+# NFS shares, [] if none
 SHARES:
   - ADDRESS: 192.168.0.10
     PATH: /mnt/pool/media
@@ -23,7 +23,7 @@ ansible_ssh_private_key_file: ~/.ssh/authorized_keys/
 STORAGE: "{{ DRIVES[0]['MOUNT'] }}"
 BACKUP: "{{ DRIVES[1]['MOUNT'] }}"
 TIMEMACHINE: "{{ DRIVES[2]['MOUNT'] }}"
-NEW_STORAGE: "{{ SHARES[0]['MOUNT'] }}" # ARR media root, use STORAGE if no shares
+NEW_STORAGE: "{{ SHARES[0]['MOUNT'] }}" # STORAGE if no SHARES
 DOCKER_CONFIG: /opt/docker
 DISK_ALERT_LIMIT: 80
 EXCLUDE_DISK: /dev/sda2 # timemachine

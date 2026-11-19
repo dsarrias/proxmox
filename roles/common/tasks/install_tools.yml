@@ -41,7 +41,6 @@
 - name: Install Docker
   become: true
   block:
-    # Replaced by docker.sources below, apt fails on conflicting Signed-By
     - name: Remove legacy Docker apt list
       file:
         path: /etc/apt/sources.list.d/docker.list

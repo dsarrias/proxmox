@@ -14,14 +14,12 @@
     mode: '0600'
   tags: docker, compose, compose-restart, container
 
-# Only runs when the compose-restart tag is requested explicitly
 - name: Stop Docker
   command: docker compose down --remove-orphans
   args:
     chdir: "{{ USER_PATH }}"
   tags: never, compose-restart
 
-# Only (re)creates containers whose config or image changed
 - name: Start Docker
   command: docker compose up -d --remove-orphans
   args:
