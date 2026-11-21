@@ -90,10 +90,22 @@ ansible-playbook -i inventories/hosts playbook.yml -t docker --check --diff
 ansible-playbook -i inventories/hosts playbook.yml -t docker
 ```
 
-## Copy compose.yml and restart only the specified container
+## Containers on a normal run
+A full run (or `-t docker`) runs `docker compose up -d --remove-orphans`: only containers whose config or image changed are recreated, the rest keep running.
+
+## Restart all containers
+Runs `docker compose down` first. Skipped unless this tag is requested explicitly.
+```shell
+ansible-playbook -i inventories/hosts playbook.yml -t compose-restart
+```
+
+## Copy compose.yml and recreate only the specified container
 ```shell
 ansible-playbook -i inventories/hosts playbook.yml -t container -e "container=samba"
 ```
+
+## Secrets on the server
+`compose.yml` (`0600`, owned by `USER`) and the Telegram scripts (`0700`, root) contain passwords and tokens, so only their owner can read them. Anything that runs the Telegram scripts (e.g. Kopia actions) must run as root.
 # Tools
 ## Telegram
 In order to create your own bot follow the next steps:
