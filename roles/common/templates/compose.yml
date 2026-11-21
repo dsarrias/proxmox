@@ -187,6 +187,7 @@ services:
       -u "{{ user.USER }};{{ user.PASS }}"
       -s "{{ user.USER }};/{{ user.USER }};yes;no"
       {% endfor -%}
+      -s "hdd;/hdd;yes;no"
       -s "media;/media;yes;no"
       -s "backup;/backup;yes;no"
       -s "timemachine;/timemachine;yes;no"
@@ -198,9 +199,10 @@ services:
       - 139:139
       - 445:445
     volumes:
-      - "{{ STORAGE }}/shared/media:/media"
+      - "{{ STORAGE }}/shared/media:/hdd"
       - "{{ BACKUP }}:/backup"
       - "{{ TIMEMACHINE }}:/timemachine"
+      - "{{ NEW_STORAGE }}:/media"
       {% for user in SAMBA -%}
       - {{ STORAGE }}/files/{{ user.USER }}:/{{ user.USER }}
       {% endfor %}
