@@ -41,6 +41,13 @@
 - name: Install Docker
   become: true
   block:
+    - name: Gather distribution facts
+      setup:
+        gather_subset: min
+        filter:
+          - ansible_distribution_release
+          - ansible_architecture
+
     - name: Remove legacy Docker apt list
       file:
         path: /etc/apt/sources.list.d/docker.list
