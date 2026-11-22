@@ -5,6 +5,24 @@
     insertafter: EOF
   tags: docker
 
+- name: Create Time Machine users directory
+  file:
+    path: "{{ DOCKER_CONFIG }}/timemachine/users"
+    state: directory
+    mode: '0700'
+  tags: docker, compose, container
+
+- name: Generate Time Machine user configs
+  template:
+    src: timemachine_user.conf
+    dest: "{{ DOCKER_CONFIG }}/timemachine/users/{{ item.USER | lower }}.conf"
+    mode: '0600'
+  loop: "{{ TIMEMACHINE_USERS }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.USER | lower }}"
+  tags: docker, compose, container
+
 - name: Generate compose.yml file and copy it
   template:
     src: compose.yml

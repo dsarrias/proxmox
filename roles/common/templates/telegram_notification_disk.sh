@@ -8,9 +8,9 @@ EXCLUDE_DISK={{ EXCLUDE_DISK }} # Pass the name of the drive to exclude
 
 # Fetch all disks mounted that start with /dev/
 if [ -z "$EXCLUDE_DISK" ]; then
-    DISK_PATHS=$(df -h | awk '$1 ~ /^\/dev\// {print $1}')
+    DISK_PATHS=$(df -h | awk '$1 ~ /^\/dev\// && $6 != "{{ TIMEMACHINE }}" {print $1}')
 else
-    DISK_PATHS=$(df -h | awk '$1 ~ /^\/dev\// {print $1}' | grep -v "$EXCLUDE_DISK")
+    DISK_PATHS=$(df -h | awk '$1 ~ /^\/dev\// && $6 != "{{ TIMEMACHINE }}" {print $1}' | grep -v "$EXCLUDE_DISK")
 fi
 
 # Function to send notification to Telegram

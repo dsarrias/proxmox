@@ -23,6 +23,7 @@ Here a summary of what's in this repository
 - [PiHole](https://docs.pi-hole.net/docker/): DNS & Ad-Blocker
 - [Watchtower](https://github.com/nicholas-fedor/watchtower): Automatic Docker upgrades
 - [Kopia](https://kopia.io/): Backups
+- [Time Machine](https://github.com/mbentley/docker-timemachine): Network Time Machine backups for Macs
 - [Tailscale](https://tailscale.com/): Client VPN
 - [Prometheus](https://prometheus.io/): Metrics collection and alert rules
 - [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/): Alert notifications to Telegram
@@ -120,7 +121,7 @@ In order to create your own bot follow the next steps:
    4.3. Use Telegram web and access your new Channel. Get the Channel ID from the URL. It usually starts with `-100`
    4.4. Use this Channel ID in the Connection configured in Radarr and Sonarr
 
-Note: `telegram_notification_disk.sh` uses an optional variable `EXCLUDE_DISK` to exclude from the notifications the Time Machine disk. This is because Time Machine tends to use the whole disk space before removing old backups.
+Note: disk alerts (`telegram_notification_disk.sh` and Prometheus) always skip the `TIMEMACHINE` mount, since Time Machine fills its quota before removing old backups. `EXCLUDE_DISK` optionally excludes one more device.
 
 # Sever Notes
 ## TrueNAS
@@ -151,6 +152,12 @@ If NOT using it for DHCP, remove:
 
 ## Kopia
 - Server start commands: https://kopia.io/docs/reference/command-line/common/server-start/
+
+## Time Machine
+- Runs on its own LAN IP (`TIMEMACHINE_IP`) through a macvlan network, since `samba` already uses port 445 on the host. The Docker host itself can't reach that IP, Macs can
+- One Time Machine user per entry in `TIMEMACHINE_USERS` (defaults to `SAMBA`): lowercase username, same password, own share limited to `TIMEMACHINE_SIZE_LIMIT`
+- Backups are stored in `TIMEMACHINE` (`/opt/<user>` in the container). The disk must be ext4 or another filesystem with xattr support (not exFAT/NTFS)
+- On each Mac: System Settings > General > Time Machine > Add Backup Disk > select the `timemachine` share for that user and log in. If it doesn't show up, Finder > Go > Connect to Server > `smb://<TIMEMACHINE_IP>` first
 
 ## Tailscale
 VPN access to your home network

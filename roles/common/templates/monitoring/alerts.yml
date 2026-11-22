@@ -33,7 +33,7 @@ groups:
           summary: "Host {{ $labels.instance }}: the kernel OOM killer killed a process"
 
       - alert: HostDiskSpaceLow
-        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"} / node_filesystem_size_bytes) * 100 > << DISK_ALERT_LIMIT >>
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>",mountpoint!="<< TIMEMACHINE >>"} / node_filesystem_size_bytes) * 100 > << DISK_ALERT_LIMIT >>
         for: 10m
         labels:
           severity: warning
@@ -41,7 +41,7 @@ groups:
           summary: "Disk {{ $labels.mountpoint }} at {{ $value | printf \"%.0f\" }}% on {{ $labels.instance }}"
 
       - alert: HostDiskSpaceCritical
-        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"} / node_filesystem_size_bytes) * 100 > 95
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>",mountpoint!="<< TIMEMACHINE >>"} / node_filesystem_size_bytes) * 100 > 95
         for: 5m
         labels:
           severity: critical
@@ -49,7 +49,7 @@ groups:
           summary: "Disk {{ $labels.mountpoint }} at {{ $value | printf \"%.0f\" }}% on {{ $labels.instance }}"
 
       - alert: HostDiskWillFillIn24h
-        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"}[6h], 86400) < 0 and node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.2
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>",mountpoint!="<< TIMEMACHINE >>"}[6h], 86400) < 0 and node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.2
         for: 30m
         labels:
           severity: warning
