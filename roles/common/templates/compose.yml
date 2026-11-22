@@ -325,31 +325,5 @@ services:
       - 5514:5514/udp #optional
     restart: unless-stopped
 
-  netdata:
-    image: netdata/netdata:latest
-    container_name: netdata
-    hostname: netdata
-    network_mode: host
-    pid: host
-    cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
-    security_opt:
-      - apparmor:unconfined
-    volumes:
-      - "{{ DOCKER_CONFIG }}/netdata/config:/etc/netdata"
-      - "{{ DOCKER_CONFIG }}/netdata/lib:/var/lib/netdata"
-      - "{{ DOCKER_CONFIG }}/netdata/cache:/var/cache/netdata"
-      - /:/host/root:ro,rslave
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /etc/os-release:/host/etc/os-release:ro
-      - /var/log:/host/var/log:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
-    
 networks:
   arr:

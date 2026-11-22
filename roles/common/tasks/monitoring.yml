@@ -1,0 +1,91 @@
+- name: Deploy monitoring stack (Prometheus, Alertmanager, Grafana)
+  vars:
+    monitoring_path: "{{ DOCKER_CONFIG }}/monitoring"
+  block:
+    - name: Create monitoring directories
+      file:
+        path: "{{ monitoring_path }}/{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ item.owner }}"
+        mode: '0755'
+      loop:
+        - { path: "", owner: "{{ USER }}" }
+        - { path: textfile, owner: root }
+        - { path: prometheus/data, owner: 65534 } # nobody, Prometheus and Alertmanager image user
+        - { path: alertmanager/data, owner: 65534 }
+        - { path: grafana/data, owner: 472 } # Grafana image user
+
+    - name: Copy Grafana provisioning and dashboards
+      copy:
+        src: monitoring/grafana
+        dest: "{{ monitoring_path }}/"
+        mode: '0644'
+      register: grafana_files
+
+    - name: Copy Alertmanager Telegram template
+      copy:
+        src: monitoring/telegram.tmpl
+        dest: "{{ monitoring_path }}/telegram.tmpl"
+        mode: '0644'
+      register: telegram_template
+
+    - name: Generate Prometheus config
+      template:
+        src: monitoring/prometheus.yml
+        dest: "{{ monitoring_path }}/prometheus.yml"
+        mode: '0644'
+      register: prometheus_config
+
+    - name: Generate Prometheus alert rules
+      template:
+        src: monitoring/alerts.yml
+        dest: "{{ monitoring_path }}/alerts.yml"
+        mode: '0644'
+        variable_start_string: '<<'
+        variable_end_string: '>>'
+      register: alert_rules
+
+    - name: Generate Alertmanager config
+      template:
+        src: monitoring/alertmanager.yml
+        dest: "{{ monitoring_path }}/alertmanager.yml"
+        owner: root
+        group: 65534
+        mode: '0640'
+      register: alertmanager_config
+
+    - name: Generate monitoring compose.yml
+      template:
+        src: monitoring/compose.yml
+        dest: "{{ monitoring_path }}/compose.yml"
+        owner: "{{ USER }}"
+        group: "{{ USER }}"
+        mode: '0600'
+
+    - name: Copy docker_state.sh
+      copy:
+        src: monitoring/docker_state.sh
+        dest: "{{ USER_PATH }}/scripts/cron/docker_state.sh"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create cron job for docker_state.sh
+      cron:
+        name: "Docker container state metrics"
+        job: "{{ USER_PATH }}/scripts/cron/docker_state.sh {{ monitoring_path }}/textfile > /dev/null 2>&1"
+
+    - name: Start monitoring stack
+      command: docker compose up -d --remove-orphans
+      args:
+        chdir: "{{ monitoring_path }}"
+      register: monitoring_up
+      changed_when: monitoring_up.stderr is search('Creat|Recreat|Start|Remov')
+
+    - name: Restart services to load changed config # bind-mounted files are replaced, not edited in place
+      command: docker compose restart prometheus alertmanager grafana
+      args:
+        chdir: "{{ monitoring_path }}"
+      when: grafana_files is changed or telegram_template is changed or prometheus_config is changed or alert_rules is changed or alertmanager_config is changed
+  tags: monitoring

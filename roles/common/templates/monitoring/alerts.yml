@@ -1,0 +1,153 @@
+groups:
+  - name: host
+    rules:
+      - alert: HostDown
+        expr: up{job="node"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is not reporting metrics"
+
+      - alert: HostHighCpuUsage
+        expr: 100 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 90
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} CPU at {{ $value | printf \"%.0f\" }}% for 15m"
+
+      - alert: HostHighMemoryUsage
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} memory at {{ $value | printf \"%.0f\" }}%"
+
+      - alert: HostOomKill
+        expr: increase(node_vmstat_oom_kill[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }}: the kernel OOM killer killed a process"
+
+      - alert: HostDiskSpaceLow
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"} / node_filesystem_size_bytes) * 100 > << DISK_ALERT_LIMIT >>
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk {{ $labels.mountpoint }} at {{ $value | printf \"%.0f\" }}% on {{ $labels.instance }}"
+
+      - alert: HostDiskSpaceCritical
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"} / node_filesystem_size_bytes) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk {{ $labels.mountpoint }} at {{ $value | printf \"%.0f\" }}% on {{ $labels.instance }}"
+
+      - alert: HostDiskWillFillIn24h
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|efivarfs",device!="<< EXCLUDE_DISK >>"}[6h], 86400) < 0 and node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.2
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk {{ $labels.mountpoint }} on {{ $labels.instance }} will be full within 24h at the current write rate"
+
+      - alert: HostNetworkErrors
+        expr: (rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m])) / (rate(node_network_receive_packets_total[5m]) + rate(node_network_transmit_packets_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Interface {{ $labels.device }} on {{ $labels.instance }} has {{ $value | humanizePercentage }} packet errors"
+
+      - alert: HostRebooted
+        expr: changes(node_boot_time_seconds[10m]) > 0
+        labels:
+          severity: info
+        annotations:
+          summary: "Host {{ $labels.instance }} rebooted"
+
+  - name: containers
+    rules:
+      - alert: ContainerDown
+        expr: docker_container_info{status!="running"}
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is {{ $labels.status }}"
+
+      - alert: ContainerRemoved
+        expr: count by (name) (docker_container_info offset 1h) unless count by (name) (docker_container_info)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} was removed in the last hour and not recreated"
+
+      - alert: ContainerUnhealthy
+        expr: docker_container_info{health="unhealthy"}
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} health check is failing"
+
+      - alert: ContainerRestarting
+        expr: increase(docker_container_restart_count[15m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} restarted {{ $value | printf \"%.0f\" }} times in 15m"
+
+      - alert: ContainerOomKilled
+        expr: increase(container_oom_events_total{name!=""}[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} ran out of memory"
+
+      - alert: ContainerHighCpuUsage
+        expr: sum by (name) (rate(container_cpu_usage_seconds_total{name!=""}[5m])) / scalar(count(node_cpu_seconds_total{mode="idle"})) * 100 > 80
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} uses {{ $value | printf \"%.0f\" }}% of host CPU for 15m"
+
+      - alert: ContainerHighMemoryUsage
+        expr: sum by (name) (container_memory_working_set_bytes{name!=""}) / scalar(node_memory_MemTotal_bytes) * 100 > 30
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} uses {{ $value | printf \"%.0f\" }}% of host memory"
+
+  - name: monitoring
+    rules:
+      - alert: TargetDown
+        expr: up{job!="node"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus can't scrape {{ $labels.job }}"
+
+      - alert: DockerStateMetricsStale
+        expr: time() - node_textfile_mtime_seconds{file=~".*docker_state.prom"} > 300 or absent(node_textfile_mtime_seconds{file=~".*docker_state.prom"})
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "docker_state.sh cron hasn't updated container status for 5m, container alerts are blind"
+
+      - alert: PrometheusRuleFailures
+        expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus failed to evaluate alert rules in group {{ $labels.rule_group }}"

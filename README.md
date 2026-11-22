@@ -24,7 +24,9 @@ Here a summary of what's in this repository
 - [Watchtower](https://github.com/containrrr/watchtower): Automatic Docker upgrades
 - [Kopia](https://kopia.io/): Backups
 - [Tailscale](https://tailscale.com/): Client VPN
-- [Netdata](https://www.netdata.cloud/): Monitoring & Alerting
+- [Prometheus](https://prometheus.io/): Metrics collection and alert rules
+- [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/): Alert notifications to Telegram
+- [Grafana](https://grafana.com/): Monitoring dashboards
 
 # Notes
 1. There are two methods to mount your drive/s destinated to store media for ARR containers: Mount it [directly in the Docker server](https://trash-guides.info/File-and-Folder-Structure/How-to-set-up/Docker/) or mount it using [TrueNAS and a NFS share](https://trash-guides.info/File-and-Folder-Structure/How-to-set-up/TrueNAS-Core/). I originally used the first method, but then I switched to TrueNAS to easyly handle ZFS and for better visualitation. If you choose the first method you can disregard all references to TrueNAS in this project.
@@ -144,7 +146,8 @@ If NOT using it for DHCP, remove:
 
 ## Watchtower
 - List of arguments: https://containrrr.dev/watchtower/arguments/
-- WATCHTOWER_SCHEDULE is set to execute every Sunday at 4AM
+- `WATCHTOWER_CRON` sets the schedule, default first day of the month at 4AM
+- Updates every container on the host, including the monitoring stack. Pinned tags (monitoring images) only get rebuilds of the same version
 
 ## Kopia
 - Server start commands: https://kopia.io/docs/reference/command-line/common/server-start/
@@ -188,6 +191,17 @@ The regular inform port is 8080, but since I used that one already, I changed it
 1. Go to Settings > System > Advanced
 2. Check `Inform Host` Override checkbox
 3. Add the local IP or DNS of the server running the Docker container
+
+## Monitoring
+Separate compose project in `DOCKER_CONFIG/monitoring`, deployed with `-t monitoring`.
+
+- Grafana `http://YOUR_IP:3000` (user `admin`, `GRAFANA_ADMIN_PASS`, only applied on first start). Home dashboard: Docker containers.
+- Prometheus `:9090`, Alertmanager `:9093`. 30 days / 5GB retention.
+- Image versions are pinned in `roles/common/templates/monitoring/compose.yml`, so Watchtower won't upgrade them (major releases can break dashboards and config). To upgrade: check the changelog, bump the tag, run `-t monitoring`.
+- Metrics: node_exporter (host), cAdvisor (container CPU/memory/network/IO), `docker_state.sh` cron every minute (container status, health check, restarts, which cAdvisor doesn't expose).
+- Alerts go to `TELEGRAM.CHAT_ID`. Rules in `roles/common/templates/monitoring/alerts.yml`; disk rules reuse `DISK_ALERT_LIMIT` and `EXCLUDE_DISK`.
+- Containers with `network_mode: host` (plex, jellyfin, tailscale) have no network interface of their own, so per-container network panels can't show them. Their traffic is in the Host network panel.
+- Silence an alert during maintenance: Alertmanager UI > New silence.
 
 # Features
 These are additional features that you can find in the `environment.yml` file.

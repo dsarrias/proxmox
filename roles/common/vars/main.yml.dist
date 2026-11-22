@@ -61,5 +61,7 @@ PIHOLE_WEB_PASS: PiholePass
 KOPIA_UI_PASS: UIPass
 KOPIA_REPO_PASS: RepoPass
 
+GRAFANA_ADMIN_PASS: GrafanaPass # Only applied on Grafana's first start
+
 TAILSCALE_AUTHKEY: tskey-client-notAReal-OAuthClientSecret1Atawk # Check README.MD
 LOCAL_SUBNET: 192.168.0.0/24 #To advertise in Tailscale for remote access

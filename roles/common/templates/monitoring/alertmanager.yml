@@ -1,0 +1,26 @@
+route:
+  receiver: telegram
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+
+inhibit_rules:
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="warning"]
+    equal: [alertname, instance, name, mountpoint]
+  - source_matchers: [alertname="HostDown"]
+    target_matchers: [alertname!="HostDown"]
+    equal: [instance]
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      - bot_token: "{{ TELEGRAM.TOKEN }}"
+        chat_id: {{ TELEGRAM.CHAT_ID }}
+        parse_mode: HTML
+        send_resolved: true
+        message: '{% raw %}{{ template "telegram.message" . }}{% endraw %}'
+
+templates:
+  - /etc/alertmanager/telegram.tmpl
