@@ -21,7 +21,7 @@ Here a summary of what's in this repository
 - [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr): Bypass Cloudflare and DDoS-GUARD protection
 - [Samba](https://hub.docker.com/r/dperson/samba): Share directories
 - [PiHole](https://docs.pi-hole.net/docker/): DNS & Ad-Blocker
-- [Watchtower](https://github.com/containrrr/watchtower): Automatic Docker upgrades
+- [Watchtower](https://github.com/nicholas-fedor/watchtower): Automatic Docker upgrades (maintained fork, the original `containrrr/watchtower` is archived)
 - [Kopia](https://kopia.io/): Backups
 - [Tailscale](https://tailscale.com/): Client VPN
 - [Prometheus](https://prometheus.io/): Metrics collection and alert rules
@@ -145,7 +145,7 @@ If NOT using it for DHCP, remove:
 - `cap_add: - NET_ADMIN`
 
 ## Watchtower
-- List of arguments: https://containrrr.dev/watchtower/arguments/
+- Configuration: https://watchtower.nickfedor.com/configuration/introduction/
 - `WATCHTOWER_CRON` sets the schedule, default first day of the month at 4AM
 - Updates every container on the host, including the monitoring stack. Pinned tags (monitoring images) only get rebuilds of the same version
 
