@@ -190,7 +190,6 @@ services:
       -s "hdd;/hdd;yes;no"
       -s "media;/media;yes;no"
       -s "backup;/backup;yes;no"
-      -s "timemachine;/timemachine;yes;no"
     stdin_open: true
     tty: true
     environment:
@@ -201,11 +200,30 @@ services:
     volumes:
       - "{{ STORAGE }}/shared/media:/hdd"
       - "{{ BACKUP }}:/backup"
-      - "{{ TIMEMACHINE }}:/timemachine"
       - "{{ NEW_STORAGE }}:/media"
       {% for user in SAMBA -%}
       - {{ STORAGE }}/files/{{ user.USER }}:/{{ user.USER }}
       {% endfor %}
+
+  timemachine:
+    image: mbentley/timemachine:smb
+    container_name: timemachine
+    hostname: timemachine
+    restart: unless-stopped
+    mac_address: "02:42:c0:a8:0a:69"
+    networks:
+      lan:
+        ipv4_address: {{ TIMEMACHINE_IP }}
+    environment:
+      - TZ={{ TIMEZONE }}
+      - EXTERNAL_CONF=/users
+      - SET_PERMISSIONS=true
+      - HIDE_SHARES=yes
+    volumes:
+      - "{{ TIMEMACHINE }}:/opt"
+      - "{{ DOCKER_CONFIG }}/timemachine/users:/users:ro"
+    tmpfs:
+      - /run/samba
 
   pihole:
     container_name: pihole
@@ -324,3 +342,12 @@ services:
 
 networks:
   arr:
+  lan:
+    driver: macvlan
+    driver_opts:
+      parent: {{ LAN_INTERFACE }}
+    ipam:
+      config:
+        - subnet: {{ LOCAL_SUBNET }}
+          gateway: {{ LAN_GATEWAY }}
+          ip_range: {{ TIMEMACHINE_IP }}/32
