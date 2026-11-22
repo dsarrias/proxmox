@@ -1,0 +1,6 @@
+{{ define "telegram.message" -}}
+{{ range .Alerts -}}
+{{ if eq .Status "resolved" }}✅ <b>RESOLVED</b>{{ else if eq .Labels.severity "critical" }}🔴 <b>CRITICAL</b>{{ else if eq .Labels.severity "warning" }}🟠 <b>WARNING</b>{{ else }}ℹ️ <b>INFO</b>{{ end }} · {{ .Labels.alertname }}
+{{ .Annotations.summary }}
+{{ end -}}
+{{- end }}

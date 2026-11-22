@@ -12,3 +12,5 @@
   when: inventory_hostname == 'ubuntu'
 - import_tasks: boot_fix.yml
   when: inventory_hostname == 'ubuntu'
+- import_tasks: monitoring.yml
+  when: inventory_hostname == 'ubuntu'
