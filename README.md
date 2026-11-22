@@ -21,7 +21,7 @@ Here a summary of what's in this repository
 - [Flaresolverr](https://github.com/FlareSolverr/FlareSolverr): Bypass Cloudflare and DDoS-GUARD protection
 - [Samba](https://hub.docker.com/r/dperson/samba): Share directories
 - [PiHole](https://docs.pi-hole.net/docker/): DNS & Ad-Blocker
-- [Watchtower](https://github.com/nicholas-fedor/watchtower): Automatic Docker upgrades (maintained fork, the original `containrrr/watchtower` is archived)
+- [Watchtower](https://github.com/nicholas-fedor/watchtower): Automatic Docker upgrades
 - [Kopia](https://kopia.io/): Backups
 - [Tailscale](https://tailscale.com/): Client VPN
 - [Prometheus](https://prometheus.io/): Metrics collection and alert rules
