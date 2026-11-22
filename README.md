@@ -121,7 +121,7 @@ In order to create your own bot follow the next steps:
    4.3. Use Telegram web and access your new Channel. Get the Channel ID from the URL. It usually starts with `-100`
    4.4. Use this Channel ID in the Connection configured in Radarr and Sonarr
 
-Note: `telegram_notification_disk.sh` uses an optional variable `EXCLUDE_DISK` to exclude from the notifications the Time Machine disk. This is because Time Machine tends to use the whole disk space before removing old backups.
+Note: disk alerts (`telegram_notification_disk.sh` and Prometheus) always skip the `TIMEMACHINE` mount, since Time Machine fills its quota before removing old backups. `EXCLUDE_DISK` optionally excludes one more device.
 
 # Sever Notes
 ## TrueNAS
