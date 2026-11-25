@@ -14,7 +14,7 @@ Here a summary of what's in this repository
 - [Jellyfin](https://docs.linuxserver.io/images/docker-jellyfin/): Free media organizer and player
 - [Tautilli](https://docs.linuxserver.io/images/docker-tautulli/): Plex monitoring & analytics
 - [qBittorrent](https://docs.linuxserver.io/images/docker-qbittorrent/): Torrent manager
-- [Overseerr](https://docs.linuxserver.io/images/docker-overseerr/): Media request manager and discovery
+- [Seerr](https://github.com/seerr-team/seerr): Media request manager and discovery (successor of Overseerr/Jellyseerr)
 - [Radarr](https://docs.linuxserver.io/images/docker-radarr/): Movies manager (Usenet and Bittorrent)
 - [Sonarr](https://docs.linuxserver.io/images/docker-sonarr/): TV Shows manager (Usenet and Bittorrent)
 - [Prowlarr](https://docs.linuxserver.io/images/docker-prowlarr/): Indexer manager
@@ -113,7 +113,7 @@ ansible-playbook -i inventories/hosts playbook.yml -t container -e "container=sa
 ## Telegram
 In order to create your own bot follow the next steps:
 1. Create a Telegram bot with `@BotFather` (the verified one)
-2. Paste your bot's token in the main.yml file and use it to create connections in the ARR apps (Overseerr, Radarr, Sonarr, Prowlarr)
+2. Paste your bot's token in the main.yml file and use it to create connections in the ARR apps (Seerr, Radarr, Sonarr, Prowlarr)
 3. Use `@get_id_bot` to find your bot's Channel ID. Use it to receive the notifications in that channel for the ARR apps and Watchtower (main.yml)
 4. (Optional) Create a Telegram Channel to separate system notifications (Overseer approvals and container updates received in the bot directly) from the new Movies / TV Shows added (Telegram Channel for family and friends).
    4.1. Create your new channel
@@ -137,6 +137,33 @@ Note: disk alerts (`telegram_notification_disk.sh` and Prometheus) always skip t
 1. Go to http://YOUR_IP:8096
 2. Configure your folders
 3. Add server in your end device
+
+### Media Bar with new releases (JellyBridge + Media Bar Enhanced)
+Home hero banner cycling through trending/upcoming releases you don't own yet. Favoriting one sends a request to Seerr.
+
+1. Dashboard > Plugins > Repositories, add both and install `JellyBridge` and `Media Bar Enhanced`, then restart Jellyfin:
+   - `https://raw.githubusercontent.com/kinggeorges12/JellyBridge/refs/heads/main/manifest.json`
+   - `https://raw.githubusercontent.com/CodeDevMLH/jellyfin-plugin-manifest/refs/heads/main/manifest.json`
+2. JellyBridge config: `Jellyseerr URL` `http://localhost:5055`, Seerr `API Key` (Seerr > Settings > General), `Library Directory` `/data/jellybridge`. Test the connection, select at least one `Network Services` entry (Import Discover Content), then `Create Discover Library` (fails without networks) and run `Import Discover Content from Jellyseerr`. Enable the sync task (12-24h).
+3. Only if Seerr uses Jellyfin as media server (it uses Plex here): Seerr > Settings > Jellyfin, don't sync the Discover library, or its placeholders get marked as Available.
+4. Media Bar Enhanced config (Advanced Settings): `Libraries to include in Media Bar` only Discover, enable `Require Title Logo`. Hard-refresh the browser (Ctrl+F5).
+5. Hide Discover from the home rows: per user, Settings > Home, untick Discover's `Display in home screen sections`. Keep the user's access to Discover, or the Media Bar is empty.
+
+Notes:
+- Media Bar only renders in Jellyfin web and web-wrapper apps, not Android TV, Tizen, Roku, Swiftfin or Kodi.
+- Placeholder files live in `NEW_STORAGE/jellybridge`, outside `media/`, so Plex and the ARR apps never see them.
+
+## Seerr
+Migrating from Overseerr (one-off, before running the playbook). Seerr migrates the config automatically on first start:
+```shell
+docker stop overseerr
+sudo cp -a /opt/docker/overseerr /opt/docker/seerr   # DOCKER_CONFIG
+sudo chown -R 1000:1000 /opt/docker/seerr
+```
+Then run `-t docker`: it removes `overseerr` and starts `seerr` on the same port 5055. Once Seerr works, delete `/opt/docker/overseerr`.
+
+- Runs as UID 1000 (`node`), not PUID/PGID
+- Jellyfin is reachable from Seerr at `http://YOUR_IP:8096`, since Jellyfin uses host networking
 
 ## Pi-hole
 More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
