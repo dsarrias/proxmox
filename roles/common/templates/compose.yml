@@ -224,6 +224,9 @@ services:
       - "{{ DOCKER_CONFIG }}/timemachine/users:/users:ro"
     tmpfs:
       - /run/samba
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 445 && avahi-daemon --check"]
 
   pihole:
     container_name: pihole
