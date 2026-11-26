@@ -23,6 +23,22 @@
     label: "{{ item.USER | lower }}"
   tags: docker, compose, container
 
+- name: Create Seerr config directory
+  file:
+    path: "{{ DOCKER_CONFIG }}/seerr"
+    state: directory
+    owner: "1000" # Seerr runs as node (UID 1000), not PUID
+    group: "1000"
+  tags: docker, compose, container
+
+- name: Create JellyBridge library directory
+  file:
+    path: "{{ NEW_STORAGE }}/jellybridge"
+    state: directory
+    owner: "{{ PUID }}"
+    group: "{{ PGID }}"
+  tags: docker, compose, container
+
 - name: Generate compose.yml file and copy it
   template:
     src: compose.yml
